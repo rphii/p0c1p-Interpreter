@@ -16,7 +16,7 @@
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.3.1"
+#define VERSION "1.3.2"
 
 #define HASH_SLOTS  0x1000
 
@@ -218,6 +218,7 @@ void run(P0c1p *state, char *str, size_t len)
     double at_j = 0;
     double temp = 0;
     // initialize states
+    size_t p_level = 0;
     state->rotation = false;
     state->someflow = false;
     state->q = 0;
@@ -226,16 +227,25 @@ void run(P0c1p *state, char *str, size_t len)
     size_t i = 0;
     while(!stop && i < len)
     {
-        if(str[i] == find && !(find = 0)) i++;
-        switch(find)
+        if(find)
         {
-            case ']': { 
+            if(str[i] == find && !--p_level)
+            {
+                find = 0;
                 i++;
-            } continue;
-            case '[': {
-                i--;
-            } continue;
-            default: break;
+            }
+            switch(find)
+            {
+                case ']': {
+                    if(str[i] == '[') p_level++;
+                    i++;
+                } continue;
+                case '[': {
+                    if(str[i] == ']') p_level++;
+                    i--;
+                } continue;
+                default: break;
+            }
         }
         switch(str[i])
         {
@@ -289,11 +299,19 @@ void run(P0c1p *state, char *str, size_t len)
                 if(!memory_set(state, state->j, at_j)) stop = true;
             } break;
             case '[': {
-                if(!state->someflow) find = ']';
+                if(!state->someflow)
+                {
+                    find = ']';
+                    p_level++;
+                }
             } break;
             case ']': {
-                if(state->someflow) find = '[';
-                i--;
+                if(state->someflow)
+                {
+                    find = '[';
+                    p_level++;
+                }
+                i -= 2;
             } break;
             case '.': {
                 if(!memory_get(state, state->i, &at_i)) stop = true;

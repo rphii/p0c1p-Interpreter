@@ -5,11 +5,18 @@
 #include <stdint.h>
 #include <math.h>
 
+#define COL_RD(msg) "\x1b[31;1m"msg "\x1b[0m"
+#define COL_BL(msg) "\x1b[94;1m"msg "\x1b[0m"
+#define COL_MG(msg) "\x1b[95;1m"msg "\x1b[0m"
+#define COL_YL(msg) "\x1b[93;1m"msg "\x1b[0m"
+#define COL_GR(msg) "\x1b[90;1m"msg "\x1b[0m"
+#define COL_UL(msg) "\x1b[4m"msg "\033[0m"
+
 #define CMD_RUN "run"
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.2.0"
+#define VERSION "1.2.1"
 
 #define HASH_SLOTS  0x1000
 
@@ -299,8 +306,8 @@ void run(P0c1p *state, char *str, size_t len)
                     stop = true;
                     break;
                 }
-                if(state->debug == DEBUG_1) printf("[1/%lf=(%d)]", at_i, (int)round(1.0 / at_i));
                 printf("%c", (int)round(1.0 / at_i));
+                if(state->debug == DEBUG_1) printf(COL_BL(" << out ") COL_GR("'%c' = %f = 1/%lf") COL_BL(" <<\n"), (int)round(1.0 / at_i), 1.0 / at_i, at_i);
             } break;
             case ',': {
                 int input = getchar();
@@ -310,8 +317,8 @@ void run(P0c1p *state, char *str, size_t len)
                     break;
                 }
                 temp = 1.0 / (double)input;
-                if(state->debug == DEBUG_1) printf("[1/%d=%lf]\n", input, temp);
                 if(!memory_set(state, state->i, temp)) stop = true;
+                if(state->debug == DEBUG_1) printf(COL_MG(">> in ") COL_GR("1/'%c' = 1/%d = %lf") COL_MG(" >>\n"), input, input, temp);
             } break;
             default: break;
         }

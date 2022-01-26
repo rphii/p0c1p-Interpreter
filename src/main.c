@@ -16,7 +16,7 @@
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.3.0"
+#define VERSION "1.3.1"
 
 #define HASH_SLOTS  0x1000
 
@@ -355,6 +355,11 @@ int main(int argc, char **argv)
         // check for switches
         if(argv[i][0] == '-')
         {
+            if(argv[i][1] && argv[i][2])
+            {
+                printf("Unknown switch '%s'.\n", argv[i]);
+                continue;
+            }
             switch(argv[i][1])
             {
                 case 'h': {

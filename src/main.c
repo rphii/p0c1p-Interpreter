@@ -354,12 +354,10 @@ void run(P0c1p *state, char *str, size_t len)
 size_t uncomment(char *str, size_t len)
 {
     if(!str) return 0;
-    size_t offset = 0;
     size_t write = 0;
-    for(size_t i = 0; i < len; i++)
+    for(size_t i = 0; i < len; i++) 
     {
-        if(strpbrk(&str[i], "+-~'\"=:[].,") != &str[i]) offset++;
-        else str[write++] = str[i];
+        if(strpbrk(&str[i], "~+-'\"=:[].,") == &str[i]) str[write++] = str[i];
     }
     return write;
 }

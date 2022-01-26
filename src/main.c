@@ -9,7 +9,7 @@
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.0.3"
+#define VERSION "1.0.4"
 
 #define HASH_SLOTS  0x1000
 
@@ -61,12 +61,20 @@ size_t file_read(char *filename, char **dump)
     return bytes_read;
 }
 
+uint64_t hash_generate(uint64_t in)
+{
+    in ^= UINT64_MAX;
+    in *= 0x61C88645;
+    in %= HASH_SLOTS;
+    return in;
+}
+
 bool hash_get(P0c1p *state, double index, size_t *hash, size_t *i)
 {
     if(!state || !i) return false;
     // hash origin
     uint64_t origin = *(uint64_t *)&index;
-    size_t hash_scope = (origin * 0x61C88645) % HASH_SLOTS;
+    size_t hash_scope = hash_generate(origin);
     if(hash) *hash = hash_scope;
     // check if the value exists
     bool found = false;
@@ -140,7 +148,7 @@ void memory_free(P0c1p *state)
 void rotate(P0c1p *state, double *value, double amount)
 {
     if(!state || !value) return;
-    double magnitude = fmod(amount, 1.0);
+    double magnitude = amount > 1.0 ? fmod(amount, 1.0) : amount;
     state->someflow = true;
     if(state->rotation)
     {

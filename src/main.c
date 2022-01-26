@@ -9,7 +9,7 @@
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.0.6"
+#define VERSION "1.0.7"
 
 #define HASH_SLOTS  0x1000
 
@@ -212,26 +212,48 @@ void run(char *str, size_t len)
                 state.rotation = (state.rotation ^ true) & 1;
             } break;
             case '~': {
-                temp = state.i;
-                state.i = state.j;
-                state.j = temp;
+                // get @i
+                if(!memory_get(&state, state.i, &at_i)) stop = true;
+                // get @j
+                if(!memory_get(&state, state.j, &at_j)) stop = true;
+                // swap @j and @i
+                temp = at_i;
+                at_i = at_j;
+                at_j = temp;
+                // set @i
+                if(!memory_set(&state, state.i, at_i)) stop = true;
+                // set @j
+                if(!memory_set(&state, state.j, at_j)) stop = true;
             } break;
             case '=': {
+                // get @i
                 if(!memory_get(&state, state.i, &at_i)) stop = true;
-                if(!memory_get(&state, state.j, &at_j)) stop = true;
-                rotate(&state, &at_i, at_j);
+                // rotate
+                if(state.q < 0) temp = 1.0 / (double)pow_int(10, -state.q);
+                else temp = state.j * (double)pow_int(10, state.q);
+                rotate(&state, &at_i, temp);
+                // set @i
                 if(!memory_set(&state, state.i, at_i)) stop = true;
             } break;
             case '\'': {
-                if(!memory_get(&state, state.j, &state.i)) stop = true;
+                // get @i
+                if(!memory_get(&state, state.i, &at_i)) stop = true;
+                // swap @i and i
+                temp = at_i;
+                at_i = state.i;
+                state.i = temp;
+                // set @i
+                if(!memory_set(&state, state.i, at_i)) stop = true;
             } break;
             case '"': {
-                if(!memory_set(&state, state.j, state.i)) stop = true;
-            } break;
-            case '*': {
-                if(state.q < 0) temp = 1.0 / (double)pow_int(10, -state.q);
-                else temp = (double)pow_int(10, state.q);
-                rotate(&state, &state.i, temp);
+                // get @j
+                if(!memory_get(&state, state.j, &at_j)) stop = true;
+                // swap @j and j
+                temp = at_j;
+                at_j = state.j;
+                state.j = temp;
+                // set @j
+                if(!memory_set(&state, state.j, at_j)) stop = true;
             } break;
             case '[': {
                 if(!state.someflow) find = ']';

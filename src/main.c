@@ -151,7 +151,7 @@ void rotate(P0c1p *state, double *value, double amount)
     else
     {
         *value += magnitude;
-        if(*value > 1) *value -= 1.0;
+        if(*value > 1.0) *value -= 1.0;
         else state->someflow = true;
     }
 }
@@ -176,6 +176,7 @@ void run(char *str, size_t len)
     double at_j = 0;
     double temp = 0;
     P0c1p state = {0};
+    state.j = 1.0;
     size_t i = 0;
     while(!stop && i < len)
     {
@@ -232,11 +233,21 @@ void run(char *str, size_t len)
             } break;
             case '.': {
                 if(!memory_get(&state, state.i, &at_i)) stop = true;
+                if(at_i == 0)
+                {
+                    stop = true;
+                    break;
+                }
                 printf("%c", (char)round(1.0 / at_i));
             } break;
             case ',': {
                 char input = 0;
                 scanf("%c", &input);
+                if(input == 0)
+                {
+                    stop = true;
+                    break;
+                }
                 temp = 1.0 / (double)input;
                 if(!memory_set(&state, state.i, temp)) stop = true;
             } break;

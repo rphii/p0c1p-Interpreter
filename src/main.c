@@ -9,12 +9,23 @@
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.1.0"
+#define VERSION "1.2.0"
 
 #define HASH_SLOTS  0x1000
 
+typedef enum DebugLevel
+{
+    DEBUG_OFF,
+    DEBUG_1,
+    DEBUG_2,
+    // keep last
+    DEBUG_MAX = DEBUG_1,
+}
+DebugLevel;
+
 typedef struct P0c1p
 {
+    DebugLevel debug;   // debug level
     bool rotation;  // false = add; true = subtract
     bool someflow;  // false = no overflow and no underflow on last rotation
     int64_t q;      // 10^q
@@ -191,16 +202,20 @@ uint64_t pow_int(uint64_t base, uint64_t exponent)
     return result;
 }
 
-void run(char *str, size_t len)
+void run(P0c1p *state, char *str, size_t len)
 {
-    if(!str) return;
+    if(!state || !str) return;
     char find = 0;
     bool stop = false;
     double at_i = 0;
     double at_j = 0;
     double temp = 0;
-    P0c1p state = {0};
-    state.j = 1.0;
+    // initialize states
+    state->rotation = false;
+    state->someflow = false;
+    state->q = 0;
+    state->i = 0;
+    state->j = 1.0;
     size_t i = 0;
     while(!stop && i < len)
     {
@@ -218,72 +233,73 @@ void run(char *str, size_t len)
         switch(str[i])
         {
             case '+': {
-                state.q++;
+                state->q++;
             } break;
             case '-': {
-                state.q--;
+                state->q--;
             } break;
             case '^': {
-                state.rotation = (state.rotation ^ true) & 1;
+                state->rotation = (state->rotation ^ true) & 1;
             } break;
             case '~': {
                 // get @i
-                if(!memory_get(&state, state.i, &at_i)) stop = true;
+                if(!memory_get(state, state->i, &at_i)) stop = true;
                 // get @j
-                if(!memory_get(&state, state.j, &at_j)) stop = true;
+                if(!memory_get(state, state->j, &at_j)) stop = true;
                 // swap @j and @i
                 temp = at_i;
                 at_i = at_j;
                 at_j = temp;
                 // set @i
-                if(!memory_set(&state, state.i, at_i)) stop = true;
+                if(!memory_set(state, state->i, at_i)) stop = true;
                 // set @j
-                if(!memory_set(&state, state.j, at_j)) stop = true;
+                if(!memory_set(state, state->j, at_j)) stop = true;
             } break;
             case '=': {
                 // get @i
-                if(!memory_get(&state, state.i, &at_i)) stop = true;
+                if(!memory_get(state, state->i, &at_i)) stop = true;
                 // rotate
-                if(state.q < 0) temp = 1.0 / (double)pow_int(10, -state.q);
-                else temp = state.j * (double)pow_int(10, state.q);
-                rotate(&state, &at_i, temp);
+                if(state->q < 0) temp = 1.0 / (double)pow_int(10, -state->q);
+                else temp = state->j * (double)pow_int(10, state->q);
+                rotate(state, &at_i, temp);
                 // set @i
-                if(!memory_set(&state, state.i, at_i)) stop = true;
+                if(!memory_set(state, state->i, at_i)) stop = true;
             } break;
             case '\'': {
                 // get @i
-                if(!memory_get(&state, state.i, &at_i)) stop = true;
+                if(!memory_get(state, state->i, &at_i)) stop = true;
                 // swap @i and i
                 temp = at_i;
-                at_i = state.i;
-                state.i = temp;
+                at_i = state->i;
+                state->i = temp;
                 // set @i
-                if(!memory_set(&state, state.i, at_i)) stop = true;
+                if(!memory_set(state, state->i, at_i)) stop = true;
             } break;
             case '"': {
                 // get @j
-                if(!memory_get(&state, state.j, &at_j)) stop = true;
+                if(!memory_get(state, state->j, &at_j)) stop = true;
                 // swap @j and j
                 temp = at_j;
-                at_j = state.j;
-                state.j = temp;
+                at_j = state->j;
+                state->j = temp;
                 // set @j
-                if(!memory_set(&state, state.j, at_j)) stop = true;
+                if(!memory_set(state, state->j, at_j)) stop = true;
             } break;
             case '[': {
-                if(!state.someflow) find = ']';
+                if(!state->someflow) find = ']';
             } break;
             case ']': {
-                if(state.someflow) find = '[';
+                if(state->someflow) find = '[';
                 i--;
             } break;
             case '.': {
-                if(!memory_get(&state, state.i, &at_i)) stop = true;
+                if(!memory_get(state, state->i, &at_i)) stop = true;
                 if(at_i == 0)
                 {
                     stop = true;
                     break;
                 }
+                if(state->debug == DEBUG_1) printf("[1/%lf=(%d)]", at_i, (int)round(1.0 / at_i));
                 printf("%c", (int)round(1.0 / at_i));
             } break;
             case ',': {
@@ -294,13 +310,14 @@ void run(char *str, size_t len)
                     break;
                 }
                 temp = 1.0 / (double)input;
-                if(!memory_set(&state, state.i, temp)) stop = true;
+                if(state->debug == DEBUG_1) printf("[1/%d=%lf]\n", input, temp);
+                if(!memory_set(state, state->i, temp)) stop = true;
             } break;
             default: break;
         }
         i++;
     }
-    memory_free(&state);
+    memory_free(state);
     if(stop)
     {
         printf("Some error occured...\n");
@@ -326,6 +343,8 @@ int main(int argc, char **argv)
     {
         printf("Try -h\n");
     }
+    P0c1p state = {0};
+    char *dump = 0;
     for(int i = 1; i < argc; i++)
     {
         if(!argv[i]) continue;
@@ -339,6 +358,7 @@ int main(int argc, char **argv)
                     printf("-h\n\tlist this here\n\n");
                     printf("-i\n\tlist information\n\n");
                     printf("-u [filename]\n\tuncomment a file\n\n");
+                    printf("-d [number]\n\tset debug output level (%d = off ... %d = max)\n\n", DEBUG_OFF, DEBUG_MAX);
                     printf("%s [filename]\n\trun a file\n\n", CMD_RUN);
                 } break;
                 case 'i': {
@@ -353,14 +373,30 @@ int main(int argc, char **argv)
                     if(++i < argc)
                     {
                         // uncomment a file
-                        char *dump = 0;
                         size_t bytes = file_read(argv[i], &dump);
                         if(!bytes) printf("Could not open file '%s'.\n", argv[i]);
-                        else bytes = uncomment(dump, bytes);
-                        file_write(argv[i], dump, bytes);
+                        else 
+                        {
+                            bytes = uncomment(dump, bytes);
+                            file_write(argv[i], dump, bytes);
+                        }
                         free(dump);
+                        dump = 0;
                     }
                     else printf("Expected a filename.\n");
+                } break;
+                case 'd': {
+                    if(++i < argc)
+                    {
+                        char *endptr;
+                        DebugLevel level = strtol(argv[i], &endptr, 10);
+                        if(*endptr == 0 && level >= DEBUG_OFF && level <= DEBUG_MAX)
+                        {
+                            state.debug = level;
+                        }
+                        else printf("Invalid debug level '%s'.\n", argv[i]);
+                    }
+                    else printf("Expected a number.\n");
                 } break;
                 default: break;
             }
@@ -373,11 +409,11 @@ int main(int argc, char **argv)
                 if(++i < argc)
                 {
                     // run file
-                    char *dump = 0;
                     size_t bytes = file_read(argv[i], &dump);
                     if(!bytes) printf("Could not open file '%s'.\n", argv[i]);
-                    else run(dump, bytes);
+                    else run(&state, dump, bytes);
                     free(dump);
+                    dump = 0;
                 }
                 else printf("Expected a filename.\n");
             }

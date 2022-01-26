@@ -9,7 +9,7 @@
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.0.4"
+#define VERSION "1.0.5"
 
 #define HASH_SLOTS  0x1000
 
@@ -160,7 +160,7 @@ void rotate(P0c1p *state, double *value, double amount)
     {
         *value += magnitude;
         if(*value > 1.0) *value -= 1.0;
-        else state->someflow = true;
+        else state->someflow = false;
     }
     if(magnitude != amount) state->someflow = true;
 }

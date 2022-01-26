@@ -9,7 +9,7 @@
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.0.7"
+#define VERSION "1.1.0"
 
 #define HASH_SLOTS  0x1000
 
@@ -59,6 +59,21 @@ size_t file_read(char *filename, char **dump)
     // close file
     fclose(file);
     return bytes_read;
+}
+
+size_t file_write(char *filename, char *dump, size_t len)
+{
+    // open file
+    FILE *file = fopen(filename, "wb");
+    if(!file) return 0;
+
+    // write file
+    size_t result = fwrite(dump, sizeof(char), len, file);
+
+    // close file
+    fclose(file);
+
+    return result;
 }
 
 uint64_t hash_generate(uint64_t in)
@@ -292,6 +307,19 @@ void run(char *str, size_t len)
     }
 }
 
+size_t uncomment(char *str, size_t len)
+{
+    if(!str) return 0;
+    size_t offset = 0;
+    size_t write = 0;
+    for(size_t i = 0; i < len; i++)
+    {
+        if(strpbrk(&str[i], "+-^~'\"=[].,") != &str[i]) offset++;
+        else str[write++] = str[i];
+    }
+    return write;
+}
+
 int main(int argc, char **argv)
 {
     if(argc == 1)
@@ -310,6 +338,7 @@ int main(int argc, char **argv)
                     printf("=== Available commands ===\n");
                     printf("-h\n\tlist this here\n\n");
                     printf("-i\n\tlist information\n\n");
+                    printf("-u [filename]\n\tuncomment a file\n\n");
                     printf("%s [filename]\n\trun a file\n\n", CMD_RUN);
                 } break;
                 case 'i': {
@@ -319,6 +348,19 @@ int main(int argc, char **argv)
                     printf("Version: %s\n", VERSION);
                     printf("Github: %s\n", GITHUB);
                     printf("Wiki: %s\n", WIKI);
+                } break;
+                case 'u': {
+                    if(++i < argc)
+                    {
+                        // uncomment a file
+                        char *dump = 0;
+                        size_t bytes = file_read(argv[i], &dump);
+                        if(!bytes) printf("Could not open file '%s'.\n", argv[i]);
+                        else bytes = uncomment(dump, bytes);
+                        file_write(argv[i], dump, bytes);
+                        free(dump);
+                    }
+                    else printf("Expected a filename.\n");
                 } break;
                 default: break;
             }

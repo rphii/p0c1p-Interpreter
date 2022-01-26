@@ -7,7 +7,7 @@
 
 #define CMD_RUN "run"
 #define AUTHOR  "rphii"
-#define GITHUB  "https://github.com/"AUTHOR"/p0c1p"
+#define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
 #define VERSION "1.0.0"
 

@@ -16,7 +16,7 @@
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.2.1"
+#define VERSION "1.3.0"
 
 #define HASH_SLOTS  0x1000
 
@@ -249,14 +249,10 @@ void run(P0c1p *state, char *str, size_t len)
                 state->rotation = (state->rotation ^ true) & 1;
             } break;
             case '~': {
-                // get @i
-                if(!memory_get(state, state->i, &at_i)) stop = true;
-                // get @j
-                if(!memory_get(state, state->j, &at_j)) stop = true;
-                // swap @j and @i
-                temp = at_i;
-                at_i = at_j;
-                at_j = temp;
+                // get @j from i
+                if(!memory_get(state, state->i, &at_j)) stop = true;
+                // get @i from j
+                if(!memory_get(state, state->j, &at_i)) stop = true;
                 // set @i
                 if(!memory_set(state, state->i, at_i)) stop = true;
                 // set @j
@@ -327,8 +323,9 @@ void run(P0c1p *state, char *str, size_t len)
     memory_free(state);
     if(stop)
     {
-        printf("Some error occured...\n");
+        printf("Some error occured...");
     }
+    printf("\n");
 }
 
 size_t uncomment(char *str, size_t len)
@@ -366,6 +363,7 @@ int main(int argc, char **argv)
                     printf("-i\n\tlist information\n\n");
                     printf("-u [filename]\n\tuncomment a file\n\n");
                     printf("-d [number]\n\tset debug output level (%d = off ... %d = max)\n\n", DEBUG_OFF, DEBUG_MAX);
+                    printf("-c [code]\n\trun passed code directly\n\n");
                     printf("%s [filename]\n\trun a file\n\n", CMD_RUN);
                 } break;
                 case 'i': {
@@ -404,6 +402,13 @@ int main(int argc, char **argv)
                         else printf("Invalid debug level '%s'.\n", argv[i]);
                     }
                     else printf("Expected a number.\n");
+                } break;
+                case 'c': {
+                    if(++i < argc)
+                    {
+                        run(&state, argv[i], strlen(argv[i]));
+                    }
+                    else printf("Expected code.\n");
                 } break;
                 default: break;
             }

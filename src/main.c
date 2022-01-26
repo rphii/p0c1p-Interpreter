@@ -9,7 +9,7 @@
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.0.5"
+#define VERSION "1.0.6"
 
 #define HASH_SLOTS  0x1000
 
@@ -313,6 +313,7 @@ int main(int argc, char **argv)
                     size_t bytes = file_read(argv[i], &dump);
                     if(!bytes) printf("Could not open file '%s'.\n", argv[i]);
                     else run(dump, bytes);
+                    free(dump);
                 }
                 else printf("Expected a filename.\n");
             }

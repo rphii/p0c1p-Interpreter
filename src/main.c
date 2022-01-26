@@ -9,7 +9,7 @@
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.0.2"
+#define VERSION "1.0.3"
 
 #define HASH_SLOTS  0x1000
 
@@ -159,7 +159,7 @@ void rotate(P0c1p *state, double *value, double amount)
 
 uint64_t pow_int(uint64_t base, uint64_t exponent)
 {
-    uint64_t result = base;
+    uint64_t result = 1;
     for(uint64_t i = 0; i < exponent; i++)
     {
         if(result * base < result) break;

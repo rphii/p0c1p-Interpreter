@@ -7,6 +7,8 @@
 
 #define CMD_RUN "run"
 #define AUTHOR  "rphii"
+#define GITHUB  "https://github.com/"AUTHOR"/p0c1p"
+#define WIKI    "https://esolangs.org/wiki/)0,1("
 #define VERSION "1.0.0"
 
 #define HASH_SLOTS  0x1000
@@ -247,6 +249,10 @@ void run(char *str, size_t len)
 
 int main(int argc, char **argv)
 {
+    if(argc == 1)
+    {
+        printf("Try -h\n");
+    }
     for(int i = 1; i < argc; i++)
     {
         if(!argv[i]) continue;
@@ -267,6 +273,7 @@ int main(int argc, char **argv)
                     printf("Author: %s\n", AUTHOR);
                     printf("Version: %s\n", VERSION);
                     printf("Github: %s\n", GITHUB);
+                    printf("Wiki: %s\n", WIKI);
                 } break;
                 default: break;
             }

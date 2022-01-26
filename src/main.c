@@ -9,7 +9,7 @@
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.0.0"
+#define VERSION "1.0.2"
 
 #define HASH_SLOTS  0x1000
 
@@ -154,6 +154,7 @@ void rotate(P0c1p *state, double *value, double amount)
         if(*value > 1.0) *value -= 1.0;
         else state->someflow = true;
     }
+    if(magnitude != amount) state->someflow = true;
 }
 
 uint64_t pow_int(uint64_t base, uint64_t exponent)
@@ -238,11 +239,10 @@ void run(char *str, size_t len)
                     stop = true;
                     break;
                 }
-                printf("%c", (char)round(1.0 / at_i));
+                printf("%c", (int)round(1.0 / at_i));
             } break;
             case ',': {
-                char input = 0;
-                scanf("%c", &input);
+                int input = getchar();
                 if(input == 0)
                 {
                     stop = true;
@@ -255,7 +255,11 @@ void run(char *str, size_t len)
         }
         i++;
     }
-    memory_free(&state);    // add an if(stop)...
+    memory_free(&state);
+    if(stop)
+    {
+        printf("Some error occured...\n");
+    }
 }
 
 int main(int argc, char **argv)

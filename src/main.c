@@ -16,7 +16,7 @@
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.3.2"
+#define VERSION "1.4.0"
 
 #define HASH_SLOTS  0x1000
 
@@ -33,7 +33,6 @@ DebugLevel;
 typedef struct P0c1p
 {
     DebugLevel debug;   // debug level
-    bool rotation;  // false = add; true = subtract
     bool someflow;  // false = no overflow and no underflow on last rotation
     int64_t q;      // 10^q
     double i;       // index 0 (main)
@@ -178,12 +177,12 @@ void memory_free(P0c1p *state)
     }
 }
 
-void rotate(P0c1p *state, double *value, double amount)
+void rotate(P0c1p *state, double *value, double amount, bool rotation)
 {
     if(!state || !value) return;
     double magnitude = amount > 1.0 ? fmod(amount, 1.0) : amount;
     state->someflow = true;
-    if(state->rotation)
+    if(rotation)
     {
         *value -= magnitude;
         if(*value < 0) *value += 1.0;
@@ -219,7 +218,6 @@ void run(P0c1p *state, char *str, size_t len)
     double temp = 0;
     // initialize states
     size_t p_level = 0;
-    state->rotation = false;
     state->someflow = false;
     state->q = 0;
     state->i = 0;
@@ -255,9 +253,6 @@ void run(P0c1p *state, char *str, size_t len)
             case '-': {
                 state->q--;
             } break;
-            case '^': {
-                state->rotation = (state->rotation ^ true) & 1;
-            } break;
             case '~': {
                 // get @j from i
                 if(!memory_get(state, state->i, &at_j)) stop = true;
@@ -274,7 +269,17 @@ void run(P0c1p *state, char *str, size_t len)
                 // rotate
                 if(state->q < 0) temp = 1.0 / (double)pow_int(10, -state->q);
                 else temp = state->j * (double)pow_int(10, state->q);
-                rotate(state, &at_i, temp);
+                rotate(state, &at_i, temp, false);
+                // set @i
+                if(!memory_set(state, state->i, at_i)) stop = true;
+            } break;
+            case ':': {
+                // get @i
+                if(!memory_get(state, state->i, &at_i)) stop = true;
+                // rotate
+                if(state->q < 0) temp = 1.0 / (double)pow_int(10, -state->q);
+                else temp = state->j * (double)pow_int(10, state->q);
+                rotate(state, &at_i, temp, true);
                 // set @i
                 if(!memory_set(state, state->i, at_i)) stop = true;
             } break;
@@ -353,7 +358,7 @@ size_t uncomment(char *str, size_t len)
     size_t write = 0;
     for(size_t i = 0; i < len; i++)
     {
-        if(strpbrk(&str[i], "+-^~'\"=[].,") != &str[i]) offset++;
+        if(strpbrk(&str[i], "+-~'\"=:[].,") != &str[i]) offset++;
         else str[write++] = str[i];
     }
     return write;

@@ -2,7 +2,7 @@
 
 \[0,1\] or )0,1( or p0c1p Interpreter
 
-Version 1.3.2
+Version 1.4.0
 
 If you come across a buggy program or other things, please add an issue in https://github.com/rphii/p0c1p-Interpreter/issues so I can fix it.
 

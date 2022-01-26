@@ -399,7 +399,7 @@ int main(int argc, char **argv)
                     printf("[0,1] or )0,1( or p0c1p Interpreter\n");
                     printf("Author: %s\n", AUTHOR);
                     printf("Version: %s\n", VERSION);
-                    printf("Github: %s\n", GITHUB);
+                    printf("GitHub: %s\n", GITHUB);
                     printf("Wiki: %s\n", WIKI);
                 } break;
                 case 'u': {

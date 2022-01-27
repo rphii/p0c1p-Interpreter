@@ -12,11 +12,10 @@
 #define COL_GR(msg) "\x1b[90;1m"msg "\x1b[0m"
 #define COL_UL(msg) "\x1b[4m"msg "\033[0m"
 
-#define CMD_RUN "run"
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.4.0"
+#define VERSION "1.5.0"
 
 #define HASH_SLOTS  0x1000
 
@@ -267,7 +266,7 @@ void run(P0c1p *state, char *str, size_t len)
                 // get @i
                 if(!memory_get(state, state->i, &at_i)) stop = true;
                 // rotate
-                if(state->q < 0) temp = 1.0 / (double)pow_int(10, -state->q);
+                if(state->q < 0) temp = state->j / (double)pow_int(10, -state->q);
                 else temp = state->j * (double)pow_int(10, state->q);
                 rotate(state, &at_i, temp, false);
                 // set @i
@@ -277,7 +276,7 @@ void run(P0c1p *state, char *str, size_t len)
                 // get @i
                 if(!memory_get(state, state->i, &at_i)) stop = true;
                 // rotate
-                if(state->q < 0) temp = 1.0 / (double)pow_int(10, -state->q);
+                if(state->q < 0) temp = state->j / (double)pow_int(10, -state->q);
                 else temp = state->j * (double)pow_int(10, state->q);
                 rotate(state, &at_i, temp, true);
                 // set @i
@@ -390,7 +389,7 @@ int main(int argc, char **argv)
                     printf("-u [filename]\n\tuncomment a file\n\n");
                     printf("-d [number]\n\tset debug output level (%d = off ... %d = max)\n\n", DEBUG_OFF, DEBUG_MAX);
                     printf("-c [code]\n\trun passed code directly\n\n");
-                    printf("%s [filename]\n\trun a file\n\n", CMD_RUN);
+                    printf("-r [filename]\n\trun a file\n\n");
                 } break;
                 case 'i': {
                     printf("=== Information ===\n");
@@ -436,29 +435,27 @@ int main(int argc, char **argv)
                     }
                     else printf("Expected code.\n");
                 } break;
+                case 'r':
+                {
+                    if(++i < argc)
+                    {
+                        // run file
+                        size_t bytes = file_read(argv[i], &dump);
+                        if(!bytes) printf("Could not open file '%s'.\n", argv[i]);
+                        else run(&state, dump, bytes);
+                        free(dump);
+                        dump = 0;
+                    }
+                    else printf("Expected a filename.\n");
+                }
                 default: break;
             }
         }
-        else
-        {
-            // check for commands
-            if(!strncmp(argv[i], CMD_RUN, sizeof(CMD_RUN)))
-            {
-                if(++i < argc)
-                {
-                    // run file
-                    size_t bytes = file_read(argv[i], &dump);
-                    if(!bytes) printf("Could not open file '%s'.\n", argv[i]);
-                    else run(&state, dump, bytes);
-                    free(dump);
-                    dump = 0;
-                }
-                else printf("Expected a filename.\n");
-            }
-            else
-            {
-                printf("Unkown command, try -h\n");
-            }
-        }
+        else printf("Unkown command '%s'\n", argv[i]);
     }
 }
+
+/* planned or in mind
+- some sort of interactive switch, similar to python's "python" command
+- improved debugging possibilities with breakpoints and memory viewer etc?
+*/

@@ -207,6 +207,17 @@ uint64_t pow_int(uint64_t base, uint64_t exponent)
     return result;
 }
 
+size_t uncomment(char *str, size_t len)
+{
+    if(!str) return 0;
+    size_t write = 0;
+    for(size_t i = 0; i < len; i++) 
+    {
+        if(strpbrk(&str[i], "~+-'\"=:[].,") == &str[i]) str[write++] = str[i];
+    }
+    return write;
+}
+
 void run(P0c1p *state, char *str, size_t len)
 {
     if(!state || !str) return;
@@ -222,6 +233,7 @@ void run(P0c1p *state, char *str, size_t len)
     state->i = 0;
     state->j = 1.0;
     size_t i = 0;
+    len = uncomment(str, len);
     while(!stop && i < len)
     {
         if(find)
@@ -348,17 +360,6 @@ void run(P0c1p *state, char *str, size_t len)
         printf("Some error occured...");
     }
     printf("\n");
-}
-
-size_t uncomment(char *str, size_t len)
-{
-    if(!str) return 0;
-    size_t write = 0;
-    for(size_t i = 0; i < len; i++) 
-    {
-        if(strpbrk(&str[i], "~+-'\"=:[].,") == &str[i]) str[write++] = str[i];
-    }
-    return write;
 }
 
 int main(int argc, char **argv)

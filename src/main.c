@@ -15,7 +15,7 @@
 #define AUTHOR  "rphii"
 #define GITHUB  "https://github.com/"AUTHOR"/p0c1p-Interpreter"
 #define WIKI    "https://esolangs.org/wiki/)0,1("
-#define VERSION "1.5.0"
+#define VERSION "1.5.1"
 
 #define HASH_SLOTS  0x1000
 
@@ -179,7 +179,8 @@ void memory_free(P0c1p *state)
 void rotate(P0c1p *state, double *value, double amount, bool rotation)
 {
     if(!state || !value) return;
-    double magnitude = amount > 1.0 ? fmod(amount, 1.0) : amount;
+    double magnitude = fmod(amount, 1.0);
+    if(amount >= 1.0) magnitude = 1.0;
     state->someflow = true;
     if(rotation)
     {
@@ -194,17 +195,6 @@ void rotate(P0c1p *state, double *value, double amount, bool rotation)
         else state->someflow = false;
     }
     if(magnitude != amount) state->someflow = true;
-}
-
-uint64_t pow_int(uint64_t base, uint64_t exponent)
-{
-    uint64_t result = 1;
-    for(uint64_t i = 0; i < exponent; i++)
-    {
-        if(result * base < result) break;
-        result *= base;
-    }
-    return result;
 }
 
 size_t uncomment(char *str, size_t len)
@@ -278,8 +268,8 @@ void run(P0c1p *state, char *str, size_t len)
                 // get @i
                 if(!memory_get(state, state->i, &at_i)) stop = true;
                 // rotate
-                if(state->q < 0) temp = state->j / (double)pow_int(10, -state->q);
-                else temp = state->j * (double)pow_int(10, state->q);
+                if(state->q < 0) temp = state->j / pow(10, -state->q);
+                else temp = state->j * pow(10, state->q);
                 rotate(state, &at_i, temp, false);
                 // set @i
                 if(!memory_set(state, state->i, at_i)) stop = true;
@@ -288,8 +278,8 @@ void run(P0c1p *state, char *str, size_t len)
                 // get @i
                 if(!memory_get(state, state->i, &at_i)) stop = true;
                 // rotate
-                if(state->q < 0) temp = state->j / (double)pow_int(10, -state->q);
-                else temp = state->j * (double)pow_int(10, state->q);
+                if(state->q < 0) temp = state->j / pow(10, -state->q);
+                else temp = state->j * pow(10, state->q);
                 rotate(state, &at_i, temp, true);
                 // set @i
                 if(!memory_set(state, state->i, at_i)) stop = true;
